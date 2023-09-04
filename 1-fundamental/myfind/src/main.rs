@@ -51,6 +51,7 @@ fn main() {
     //     .next()
     //     .unwrap_or("MyApp".to_string()); // 默认为"MyApp"，如果找不到程序名称则使用默认值
 
+    // 转换为正则表达式
     let pattern = matches.value_of("pattern").unwrap();
     let regex = match  Regex::new(pattern) {
         Ok(re) => re,
@@ -60,23 +61,20 @@ fn main() {
         }
     };
 
-    let verbose = matches.is_present("verbose"); verbose = matches.is_present("verbose");
+    let verbose = matches.is_present("verbose");
 
     let tar_file = matches.value_of("output");
 
     let dir = matches.value_of("directory").unwrap();
-    match find(dir, &regex) {
+    match find(dir, &regex, &verbose) {
         Ok(matches) => {
             if matches.is_empty() {
                 println!("Unfind matches.");
             } else {
-                if verbose {
-                    println!("Find: ");
-                    for file in &matches {
-                        println!("{}", file);
-                    }
+                println!("Find: ");
+                for file in &matches {
+                    println!("{}", file);
                 }
-
                 if let Some(output_file) =  tar_file{
                     if let Err(err) = write_matches_to_file(&matches, output_file) {
                         eprintln!("Failed to write matches to file: {}", err);
