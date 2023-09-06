@@ -1,48 +1,54 @@
-use std::mem;
-
 #[derive(Debug)]
+use std::ops::Deref;
+use std::cell::RefCell;
+
 pub struct MyRc<T> {
-    value: T,
-    ref_count: usize,
+    data: *mut T,
+    ref_count: RefCell<usize>,
 }
 
 impl<T> MyRc<T> {
-    pub fn new(value: T) -> Self {
+    pub fn new(data: T) -> Self {
+        let rc = MyRc {
+            data: Box::into_raw(Box::new(data)),
+            ref_count: RefCell::new(1),
+        };
+        rc
+    }
+
+    pub fn clone(&self) -> Self {
+        *self.ref_count.borrow_mut() += 1;
         MyRc {
-            value: value,
-            ref_count: 1,
+            data: self.data,
+            ref_count: self.ref_count.clone(),
         }
     }
+}
 
-    pub fn clone(&self) -> Self
-    where
-        T: Copy,
-    {
-        self.ref_count += 1;
-        *self
+impl<T> Deref for MyRc<T> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        unsafe { &*self.data }
     }
+}
 
-    pub fn drop(&mut self) {
-        self.ref_count -= 1;
-        if self.ref_count == 0 {
-            mem::drop(self.value);
+impl<T> Drop for MyRc<T> {
+    fn drop(&mut self) {
+        let count = &mut *self.ref_count.borrow_mut();
+        *count -= 1;
+        if *count == 0 {
+        unsafe {
+                let _ = Box::from_raw(self.data);
+            }
         }
-    }
-
-    pub fn DeRef(&self) -> &T {
-        &self.value
-    }
-
-    pub fn Copy(&self) -> T
-    where
-        T: Copy,
-    {
-        self.value
     }
 }
 
 fn main() {
-    let rc = MyRc::new(1);
-    let _rc2 = rc.clone();
-    // println!("rc: {:?}, rc2: {:?}", rc, rc2);
+    let rc1 = MyRc::new(42);
+    let rc2 = rc1.clone();
+
+    println!("rc1: {}", *rc1);
+    println!("rc2: {}", *rc2);
 }
