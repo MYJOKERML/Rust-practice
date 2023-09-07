@@ -1,7 +1,7 @@
-#[derive(Debug)]
 use std::ops::Deref;
 use std::cell::RefCell;
 
+#[derive(Debug)]
 pub struct MyRc<T> {
     data: *mut T,
     ref_count: RefCell<usize>,
@@ -38,7 +38,7 @@ impl<T> Drop for MyRc<T> {
         let count = &mut *self.ref_count.borrow_mut();
         *count -= 1;
         if *count == 0 {
-        unsafe {
+            unsafe {
                 let _ = Box::from_raw(self.data);
             }
         }
@@ -48,7 +48,14 @@ impl<T> Drop for MyRc<T> {
 fn main() {
     let rc1 = MyRc::new(42);
     let rc2 = rc1.clone();
-
-    println!("rc1: {}", *rc1);
-    println!("rc2: {}", *rc2);
+    let rc3 = rc2.clone();
+    unsafe {
+        println!("rc1: {:?}", *rc1.data);
+    }
+    println!("rc1: {:?}", *rc1.ref_count.borrow()); // 2
+    println!("rc2: {}", *rc2.ref_count.borrow()); // 3
+    println!("rc3: {}", *rc3.ref_count.borrow()); // 3
+    drop(rc2);
+    println!("rc1: {:?}", *rc1.ref_count.borrow()); // 2
+    println!("rc3: {}", *rc3.ref_count.borrow());
 }
