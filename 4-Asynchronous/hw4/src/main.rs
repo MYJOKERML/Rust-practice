@@ -1,38 +1,27 @@
-use std::{
-    future::Future,
-    sync::{Arc, Condvar, Mutex},
-    task::{Context, Poll, Wake, Waker},
+mod multitask;
+
+use multitask::spawn;
+
+async fn demo() {
+    let (tx, rx) = async_channel::bounded(1);
+    spawn(demo2(tx));
+    println!("Test multitask! Hello, world!");
+    let _ = rx.recv().await;
 }
 
-#[cfg(feature = "macro")]
-pub use pollster_macro::{main, test};
-
-pub trait FutureExt: Future {
-    fn block_on(self) -> Self::Output where Self: Sized { block_on(self) }
+async fn demo2(tx: async_channel::Sender<()>) {
+    println!("Test multitask! Hello, world 2!");
+    let _ = tx.send(()).await;
 }
 
-impl<F: Future> FutureExt for F {}
-
-enum SignalState {
-    Empty,
-    Waiting,
-    Notified,
+async fn demo_waker() {
+    println!("Test Waker!");
 }
 
-struct Signal {
-    state: Mutex<SignalState>,
-    cond: Condvar,
+fn main() {
+    let future = demo();
+    let w = demo_waker();
+    multitask::pollster::block_on(w);
+    multitask::block_on(future);
 }
 
-impl Signal {
-    fn new() -> Self {
-        Self {
-            state: Mutex::new(SignalState::Empty),
-            cond: Condvar::new(),
-        }
-    }
-
-    fn wait(&self) {
-        let mut state = self.state.lock().unwrap();
-    }
-}
