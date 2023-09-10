@@ -2,8 +2,8 @@ use std::ops::Deref;
 use std::cell::Cell;
 
 pub struct MyRc<T> {
-    data: *mut T,
-    ref_count: *mut Cell<usize>,
+    pub data: *mut T,
+    pub ref_count: *mut Cell<usize>,
 }
 
 impl<T> MyRc<T> {
@@ -48,17 +48,3 @@ impl<T> Drop for MyRc<T> {
     }
 }
 
-fn main() {
-    let rc1 = MyRc::new(42);
-    let rc2 = rc1.clone();
-    let rc3 = rc2.clone();
-    unsafe {
-        println!("rc1: {:?}", *rc1.data);
-    }
-    println!("rc1 ref count: {}", unsafe { (*rc1.ref_count).get() }); // 3
-    println!("rc2 ref count: {}", unsafe { (*rc2.ref_count).get() }); // 3
-    println!("rc3 ref count: {}", unsafe { (*rc3.ref_count).get() }); // 3
-    drop(rc2);
-    println!("rc1 ref count: {}", unsafe { (*rc1.ref_count).get() }); // 2
-    println!("rc3 ref count: {}", unsafe { (*rc3.ref_count).get() }); // 2
-}
