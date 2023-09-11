@@ -33,10 +33,8 @@ fn handle_request(request: &str, storage: &mut HashMap<String, String>) -> Strin
     match &parts.next().unwrap().to_uppercase()[..] {
         "GET" => {
             if let Some(key) = parts.next() {
-                // println!("key: {}", key);
-                // println!("storage.get(key): {:?}", storage.get(key));
                 if let Some(value) = storage.get(key) {
-                    return format!("GET: {}\r\n", value);
+                    return format!("GET: {:?}\r\n", value);
                 }
             }
             return "ERROR: Key not found\r\n".to_string();
@@ -45,16 +43,18 @@ fn handle_request(request: &str, storage: &mut HashMap<String, String>) -> Strin
             if let Some(key) = parts.next() {
                 if let Some(value) = parts.next() {
                     let _ = storage.insert(key.to_string(), value.to_string());
-                    println!("storage: {:?}", storage);
-                    return "OK\r\n".to_string();
+                    return format!("SUCCESSFULLY SET {{ {:?}: {:?} }}\r\n", key, value);
                 }
             }
             return "ERROR: Invalid arguments\r\n".to_string();
         }
         "DEL" => {
             if let Some(key) = parts.next() {
-                storage.remove(key);
-                return "OK\r\n".to_string();
+                if let Some(del_v) = storage.get(key) {
+                    let del_v = del_v.clone().to_string();
+                    storage.remove(key);
+                    return format!("SUCCESSFULLY DEL {{ {:?}: {:?} }}\r\n", key, del_v);
+                }
             }
             return "ERROR: Invalid arguments\r\n".to_string();
         }
