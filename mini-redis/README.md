@@ -40,6 +40,6 @@ cargo run --bin client-cli
 
 `subscribe`, `publish` 效果如下：
 
-`subscribe <channel>`, `publish <channel> <info>`, `subscribe` 输出![image-20230912212302063](./image-20230912212302063.png)订阅信息，`publish` 返回订阅者数目
+`subscribe <channel>`, `publish <channel> <info>`, `subscribe` 输出订阅信息，`publish` 返回订阅者数目
 
 ![image-20230912212037099](./img/image-20230912212037099.png)
