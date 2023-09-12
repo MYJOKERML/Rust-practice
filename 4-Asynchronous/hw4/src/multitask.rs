@@ -1,4 +1,4 @@
-pub mod pollster;
+use crate::pollster;
 
 use pollster::Signal;
 use std::{

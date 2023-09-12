@@ -1,4 +1,5 @@
 mod multitask;
+mod pollster;
 
 use multitask::spawn;
 
@@ -21,7 +22,7 @@ async fn demo_waker() {
 fn main() {
     let future = demo();
     let w = demo_waker();
-    multitask::pollster::block_on(w);
+    pollster::block_on(w);
     multitask::block_on(future);
 }
 
