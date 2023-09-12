@@ -1,18 +1,29 @@
 namespace rs volo.example
 
-struct GetItemRequest {
-    1: required i32 opcode,
-    2: required string key_channal,
-    3: required string value_message,
+struct Item {
+    1: required string key,
+    2: optional string value,
+
+    10: optional i64 deleted_delay,
 }
 
-struct GetItemResponse {
-    1: required i32 opcode,
-    2: required string key_channal,
-    3: required string value_message,
-    4: required bool success,
+struct KeyRequest {
+    1: required string key,
+}
+
+struct ItemRequest {
+    1: required Item item,
+}
+
+struct ItemResponse {
+    1: required Item item,
 }
 
 service ItemService {
-    GetItemResponse GetItem (1: GetItemRequest req),
+    ItemResponse Get (1: KeyRequest req),
+    ItemResponse Set (1: ItemRequest req),
+    ItemResponse Del (1: KeyRequest req),
+    ItemResponse Ping (1: ItemRequest req),
+    ItemResponse Publish (1: ItemRequest req),
+    ItemResponse Subscribe (1: KeyRequest req),
 }
