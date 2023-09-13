@@ -15,7 +15,7 @@ use lazy_static::lazy_static; // 添加此行
 
 lazy_static! {
     static ref HOST: String = "127.0.0.1".to_string(); // 创建全局HOST变量
-    static ref PORT: u16 = 8080; // 创建全局PORT变量
+    static ref PORT: u16 = 1314; // 创建全局PORT变量
 }
 
 
