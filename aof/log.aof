@@ -1,0 +1,15 @@
+SET name Alice
+SET name Bob
+DEL name
+SET name Alice
+SET name Bob
+DEL name
+SET name Alice
+SET name Bob
+DEL name
+SET name Alice
+SET name Bob
+DEL name
+SET name Alice
+SET name Bob
+DEL name
