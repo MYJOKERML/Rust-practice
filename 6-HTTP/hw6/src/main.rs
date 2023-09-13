@@ -1,13 +1,23 @@
 use axum::{
     extract::Extension,
-    routing::get,
-    // response::NamedFile,
+    routing::{get, get_service},
+    response::Html,
+    http::StatusCode,
     Router,
 };
 use rand::seq::SliceRandom;
 use std::io;
 use std::sync::Arc;
-use tokio::fs::File;
+// use tokio::fs::File;
+use tower_http::services::ServeDir;
+
+use lazy_static::lazy_static; // 添加此行
+
+lazy_static! {
+    static ref HOST: String = "127.0.0.1".to_string(); // 创建全局HOST变量
+    static ref PORT: u16 = 8080; // 创建全局PORT变量
+}
+
 
 #[derive(Debug)]
 struct Image {
@@ -43,16 +53,16 @@ impl Image {
     }
 }
 
-async fn random_image(Extension(images_directory): Extension<Arc<String>>) -> Result<File, io::Error> {
+
+async fn random_image(Extension(images_directory): Extension<Arc<String>>) -> Html<String> {
     match Image::random_from_directory(&images_directory.as_str()) {
         Ok(image) => {
-            let file_path = format!("{}/{}", &images_directory, image.path);
-            let named_file = File::open(file_path).await?;
-            Ok(named_file)
+            let img_src = format!("http://{}:{}/{}", *HOST, *PORT, image.path);
+            Html(format!("<img src=\"{}\" alt=\"Random Image\">", img_src))
         }
         Err(e) => {
             println!("Error: {:?}", e);
-            Err(e)
+            Html("<p>No images found</p>".to_string())
         }
     }
 }
@@ -60,14 +70,25 @@ async fn random_image(Extension(images_directory): Extension<Arc<String>>) -> Re
 #[tokio::main]
 async fn main() -> io::Result<()> {
     let images_directory = Arc::new("images".to_string());
+    let current_dir = std::env::current_dir().unwrap();
+    println!("current_dir: {:?}", current_dir);
 
     let app = Router::new()
         .route("/random-image", get(random_image))
+        .nest(
+            "/images",
+            get_service(ServeDir::new("images")).handle_error(|err| async move {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("处理静态资源出错：{:?}", err),
+                )
+            }),
+        )
         .layer(Extension(images_directory.clone()));
 
     println!("{:?}", images_directory);
 
-    axum::Server::bind(&"127.0.0.1:8080".parse().unwrap())
+    axum::Server::bind(&format!("{}:{}", *HOST, *PORT).parse().unwrap())
         .serve(app.into_make_service())
         .await
         .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
