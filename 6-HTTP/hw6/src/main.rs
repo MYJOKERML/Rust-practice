@@ -11,7 +11,7 @@ use std::sync::Arc;
 // use tokio::fs::File;
 use tower_http::services::ServeDir;
 
-use lazy_static::lazy_static; // 添加此行
+use lazy_static::lazy_static;
 
 lazy_static! {
     static ref HOST: String = "127.0.0.1".to_string(); // 创建全局HOST变量
